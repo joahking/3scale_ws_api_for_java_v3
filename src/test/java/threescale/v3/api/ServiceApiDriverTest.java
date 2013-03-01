@@ -99,6 +99,26 @@ public class ServiceApiDriverTest {
     }
 
     @Test
+    public void test_successful_authrep_with_app_keys() throws ServerError {
+        final String body = "<status>" +
+                "<authorized>true</authorized>" +
+                "<plan>Ultimate</plan>" +
+                "</status>";
+
+        context.checking(new Expectations() {{
+            oneOf(htmlServer).get("http://" + host + "/transactions/authrep.xml?provider_key=1234abcd&app_key=toosecret&app_id=foo");
+            will(returnValue(new HttpResponse(200, body)));
+        }});
+
+        ParameterMap params = new ParameterMap();
+        params.add("app_id", "foo");
+        params.add("app_key", "toosecret");
+
+        AuthorizeResponse response = serviceApi.authrep(params);
+        assertTrue(response.success());
+    }
+
+    @Test
     public void test_successful_authorize() throws ServerError {
         final String body = "<status>" +
                 "<authorized>true</authorized>" +
@@ -468,7 +488,6 @@ public class ServiceApiDriverTest {
         params.add("usage", usage);
         serviceApi.report(params);
     }
-
 
     private void assertAuthrepUrlWithParams(final String params) throws ServerError {
         final String authrep_url = "http://" + host + "/transactions/authrep.xml?provider_key=" + provider_key + params;
